@@ -1,0 +1,695 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор</title>
+    <link rel="stylesheet" href="{% static 'css/app.min.css' %}">
+
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="nav fixed">
+        <div class="nav_wrap container">
+            <ul class="nav_menu">
+                <li class="nav_items current"><a class="nav_link" href="#">Главная</a></li>
+                <li class="nav_items"><a class="nav_link" href="#">Поиск кода ТН ВЭД</a></li>
+                <li class="nav_items"><a class="nav_link" href="#">Таможенная стоимость</a></li>
+                <li class="nav_items"><a class="nav_link" href="#">Расчет платежей</a></li>
+                <li class="nav_items"><a class="nav_link" href="#">Справочная информация</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <header class="header">
+
+            <img class="header_img" src="{% static 'images\calc.jpg' %}" alt="My image">
+
+            <h2 class="header_title">Калькулятор расчета таможенных платежей</h2>
+            <div class="header_main">
+
+                <p class="header_subtitle"> Калькулятор предназначен для расчёта таможенных платежей для таможенных специалистов и участников внешнеэкономической деятельности в Кыргызской Республике.
+                </p>
+                <p class="header_stn"> С помощью Калькулятора расчета таможенных платежей можно:
+                </p>
+                <ul class="header_list">
+
+                    <li> найти нужный код товара в ТНВЭД (по коду или наименованию);
+                    </li>
+                    <li>просмотреть установленные ставки таможенных платежей для конкретного товара;
+                    </li>
+                    <li> рассчитать таможенные платежи, указав количество, цену и др. данные;
+                        <li>ознакомиться с текстом законов, согласно которых применяются ставки и требования.
+                        </li>
+                </ul>
+
+                <p class="header_stn"> Чтобы самостоятельно рассчитать расходы на растаможку, необходимо:
+                </p>
+                <ul class="header_list">
+
+                    <li> Определить код ТН ВЭД. Для точного определения кода ТН ВЭД просто введите ключевую фразу (например, наименование товара) в форму поиска Таможенного калькулятора, а дальше из появившегося списка выберите товар.</li>
+                    <li> Ввести параметры для расчета таможенной стоимости, которая складывается из суммы оплаты по инвойсу и иных расходов по доставке.</li>
+                    <li>Ввести параметры для расчета итоговых расходов по таможенной очистке.
+                    </li>
+                    <li>Выполнить расчет и ознакомиться с итогом.</li>
+                </ul>
+            </div>
+        </header>
+        <section class="stable">
+            <h2 class="stable_title"> I. Поиск кода ТН ВЭД</h2>
+            <form class="form" action="{% url 'index' %}" method="get">
+                {% csrf_token %}
+                <label class="form_lable" for="q">По наименованию:</label>
+                <input class="form_input" placeholder="Найти" aria-label="Search" type="text" name="q">
+                <button type="submit" class="form_btn">Найти</button>
+                <label class="form_lable" for="f">По коду ТН ВЭД:</label>
+                <input class="form_input" placeholder="Найти" aria-label="Search" type="text" name="f">
+                <button type="submit" class="form_btn">Найти</button>
+            </form>
+
+            <p class="desc">Кликните на код, чтобы скопировать в поле калькулятора.</p>
+            <div class="table">
+                <div class="item1">
+                    <div class="table_header">
+                        <p>Код ТНВЭД:</p>
+                    </div>
+                    <div class="table_header">
+                        <p>Наименование товарной позиции</p>
+                    </div>
+                    <div class="table_header">
+                        <p>Ставка ввозной таможенной<br> пошлины</p>
+                    </div>
+                </div>
+                <div class="table_main">
+                    {% for tabname in calchscode %}
+                    <div class="col1"><a href="" class="super_id" data-code="{{tabname.code}}" data-name="{{ tabname.name }}" data-rate="{{tabname.rate}}">{{ tabname.code }}</a></div>
+                    <div class="col2">{{ tabname.name }}</div>
+                    <div class="col3">{{tabname.rate}}</div>
+                    {% endfor %}
+                </div>
+
+                {% if is_paginated %}
+                <ul class="pagination justify-content-end pt-2 pb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                    {% endif %} {% for i in paginator.page_range %} {% if page_obj.number == i %}
+                    <li class="page-item active"><span class="page-link">{{i}} <span class="sr-only"></span></span>
+                    </li>
+                    {% else %}
+                    <li class="page-item "><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                    {% endif %} {% endfor %} {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                    {% endif %}
+                </ul>
+                {% endif %}
+            </div>
+        </section>
+
+
+        <section class="table_info">
+            <div class="info_left">
+                <div>
+                    <p class="item2_desc"> Код ТН ВЭД: <span id="code_out"></span></p>
+                </div>
+                <div>
+                    <p class="item2_desc"> Товарная позиция: <span id="code_name"></span></p>
+                </div>
+                <div>
+                    <p class="item2_desc"> Пошлина: <span id="code_rate"></span></p>
+                </div>
+                <div>
+                    <p class="item2_desc"> Акциз: <span></span></p>
+                </div>
+                <div>
+                    <p class="item2_desc">НДС: <span></span></p>
+                </div>
+                <div>
+                    <p class="item2_desc"> Преференциальный товар: <span></span></p>
+                </div>
+            </div>
+            <div class="info_right">
+                <p>
+                    <strong>Товарная номенклатура внешнеэкономической деятельности (ТН ВЭД)<sup>[1]</sup></strong> - классификатор товаров, применяемый таможенными органами и участниками внешнеэкономической деятельности (ВЭД) в целях проведения таможенных
+                    операций. ТН ВЭД является расширенным вариантом Гармонизированной Системы (ГС), разработанной Всемирной таможенной организацией и принятой в качестве основы для товарной классификации в странах Евросоюза и других.
+                </p>
+                <details>
+                    <summary>Подробнее..</summary>
+                    <p>Суть классификатора состоит в том, что каждому товару или группе товаров присваивается свой уникальный код и назначается таможенная пошлина. Этот классификатор применяется с целю обеспечения однозначной идентификации товаров, взымания
+                        таможенных пошлин и для упрощения автоматизированной обработки таможенных деклараций.</p>
+                </details>
+
+            </div>
+
+
+        </section>
+        <section class="paymant">
+            <div>
+                <h2 class="stable_title">II. Определение таможенной стоимости</h2>
+            </div>
+            <div class="paymant_cost">
+                <div class="paymant_cost-left">
+                    <div class="cost-blok">
+                        <div>
+                            <p class="paymant_info">Сумма оплаты по инвойсу:</p>
+                            <p class="paymant_info">Расходы по доставке:</p>
+                        </div>
+                        <div>
+                            <input class="cost_input val_field" type="text" id="invoice" name="invoice" value="0">
+                            <input class="cost_input val_field" type="text" id="shipping" name="shipping" value="0">
+                        </div>
+                        <div>
+                            <select class="select" id="iso_invoice" name="iso_invoice">
+								<option value="SOM">Сом</option>
+								<option value="USD">Доллар США</option>
+								<option value="EUR">ЕВРО</option>
+								<option value="KZT">Казахский тенге</option>
+								<option value="RUB">Российский рубль</option>
+							</select>
+                            <select class="select" id="iso_shipping" name="iso_shipping">
+								<option value="SOM">Сом</option>
+								<option value="USD">Доллар США</option>
+								<option value="EUR">ЕВРО</option>
+								<option value="KZT">Казахский тенге</option>
+								<option value="RUB">Российский рубль</option>
+							</select>
+                        </div>
+                        <style>
+                            #cust_val_info {
+                                visibility: hidden;
+                            }
+                        </style>
+                        <p id="cust_val_info" class="paymant_info">Таможенная стоимость (сом)</p>
+                        <span id="cust_val">  </span>
+                    </div>
+                    <div class="block_bottom">
+                        <p class="desc">Кликните на стоимость, чтобы скопировать в поле калькулятора.</p>
+                        <button type="submit" class="submit onsubmit">Считать</button>
+                    </div>
+                </div>
+
+
+
+
+                <div class="paymant_cost-right">
+                    <div class="cost_table">
+                        <div class="nbkr">
+                            <div class="nbkr_head">
+                                <p>Курсы валют НБКР</p>
+                            </div>
+                            <div class="nbkr_val">
+                                <div class="val">USD</div>
+                                <div class="ff"><span class="val_img usd"> </span></div>
+                                <div id="usd" class="val_cost">{{now.usd}} сом</div>
+                                <div class="val">EUR</div>
+                                <div class="ff"><span class="val_img eur"> </span></div>
+                                <div id="eur" class="val_cost">{{now.eur}} сом</div>
+                                <div class="val">RUB</div>
+                                <div class="ff"><span class="val_img rub"> </span></div>
+                                <div id="rub" class="val_cost">{{now.rub}} сом</div>
+                                <div class="val">KZT</div>
+                                <div class="ff"><span class="val_img kzt"> </span></div>
+                                <div id="tenge" class="val_cost">{{now.tenge}} сом</div>
+                            </div>
+                            <div class="nbkr_footer">от {{now.day}}</div>
+                        </div>
+                        <div></div>
+                    </div>
+                    <div class="cost_info">
+                        <p>
+                            <strong>По стоимости сделки с ввозимыми товарами</strong><sup>(Метод 1)</sup> — основной метод определения таможенной стоимости, когда она определяется по стоимости сделки, фактически уплаченной или подлежащей уплате на момент
+                            пересечения товаром таможенной границы. При этом в таможенную стоимость включаются затраты на транспортировку, страхование, лицензирование и другие, фактически понесенные декларантом к моменту пересечения таможенной границы.</p>
+                    </div>
+                    <details class="sector_item">
+                        <summary>Подробнее..</summary>
+                        <p>Порядок определения таможенной стоимости ввозимых товаров установлен Соглашением об определении таможенной стоимости товаров, перемещаемых через таможенную границу Таможенного союза и производится путем применения одного из шести
+                            методов определения таможенной стоимости товаров: -по стоимости сделки с ввозимыми товарами; -по стоимости сделки с идентичными товарами; -по стоимости сделки с однородными товарами; -методом вычитания стоимости; -методом сложения
+                            стоимости; -резервным методом.</p>
+                    </details>
+                </div>
+            </div>
+        </section>
+        <section class="calc">
+            <div class="calc_item1">
+                <h2 class="stable_title">III. Расчет платежей</h2>
+            </div>
+            <div class="calc_item2">
+                <form class="form2" action="{% url 'index' %}" method="get">
+                    {% csrf_token %}
+
+                    <div class="in_for1"><label for="taxcode">Код ТН ВЭД:</label></div>
+                    <div class="in_for2"> <input type="text" id="taxcode" class=" wisi" name="taxcode" title="необходимо указать 10-значный код" required="" pattern=".{10,}" autocomplete="off"></div>
+                    <div class="in_for3"><label for="country">Страна-контрагент:</label></div>
+                    <div class="in_for4">
+                        <select class="select_country" name="country">
+						<option value="AU" selected="">Австралия</option>
+						<option value="AT">Австрия</option>
+						<option value="AL">Албания</option>
+						<option value="DZ">Алжир</option>
+						<option value="AS">Американское самоа</option>
+						<option value="AI">Ангилья</option>
+						<option value="AO">Ангола</option>
+						<option value="AD">Андорра</option>
+						<option value="AG">Антигуа и барбуда</option>
+						<option value="AR">Аргентина</option>
+						<option value="AM">Армения</option>
+						<option value="AW">Аруба</option>
+						<option value="AF">Афганистан</option>
+						<option value="BS">Багамские острова</option>
+						<option value="BD">Бангладеш</option>
+						<option value="BB">Барбадос</option>
+						<option value="BH">Бахрейн</option>
+						<option value="BZ">Белиз</option>
+						<option value="BE">Бельгия</option>
+						<option value="BJ">Бенин</option>
+						<option value="BM">Бермудские острова</option>
+						<option value="BG">Болгария</option>
+						<option value="BO">Боливия, многонациональное государство</option>
+						<option value="BA">Босния и герцеговина</option>
+						<option value="BW">Ботсвана</option>
+						<option value="BR">Бразилия</option>
+						<option value="IO">Британская территория в индийском океане</option>
+						<option value="VG">Британские виргинские острова</option>
+						<option value="BN">Бруней-даруссалам</option>
+						<option value="BF">Буркина-фасо</option>
+						<option value="BI">Бурунди</option>
+						<option value="BT">Бутан</option>
+						<option value="VU">Вануату</option>
+						<option value="HU">Венгрия</option>
+						<option value="VE">Венесуэла, боливирианская республика</option>
+						<option value="VI">Виргинские острова (сша)</option>
+						<option value="VN">Вьетнам</option>
+						<option value="GA">Габон</option>
+						<option value="HT">Гаити</option>
+						<option value="GY">Гайана</option>
+						<option value="GM">Гамбия</option>
+						<option value="GH">Гана</option>
+						<option value="GP">Гваделупа</option>
+						<option value="GT">Гватемала</option>
+						<option value="GN">Гвинея</option>
+						<option value="GW">Гвинея-бисау</option>
+						<option value="DE">Германия</option>
+						<option value="GG">Гернси</option>
+						<option value="GI">Гибралтар</option>
+						<option value="HN">Гондурас</option>
+						<option value="HK">Гонконг</option>
+						<option value="GD">Гренада</option>
+						<option value="GL">Гренландия</option>
+						<option value="GR">Греция</option>
+						<option value="GE">Грузия</option>
+						<option value="GU">Гуам</option>
+						<option value="DK">Дания</option>
+						<option value="DJ">Джибути</option>
+						<option value="DM">Доминика</option>
+						<option value="DO">Доминиканская республика</option>
+						<option value="EU">Европейский союз</option>
+						<option value="EG">Египет</option>
+						<option value="ZM">Замбия</option>
+						<option value="EH">Западная сахара</option>
+						<option value="ZW">Зимбабве</option>
+						<option value="IL">Израиль</option>
+						<option value="IN">Индия</option>
+						<option value="ID">Индонезия</option>
+						<option value="JO">Иордания</option>
+						<option value="IQ">Ирак</option>
+						<option value="IR">Иран</option>
+						<option value="IE">Ирландия</option>
+						<option value="IS">Исландия</option>
+						<option value="ES">Испания</option>
+						<option value="IT">Италия</option>
+						<option value="YE">Йемен</option>
+						<option value="CV">Кабо-верде</option>
+						<option value="KZ">Казахстан</option>
+						<option value="KH">Камбоджа</option>
+						<option value="CM">Камерун</option>
+						<option value="CA">Канада</option>
+						<option value="QA">Катар</option>
+						<option value="KE">Кения</option>
+						<option value="CY">Кипр</option>
+						<option value="KI">Кирибати</option>
+						<option value="CN">Китай</option>
+						<option value="CC">Кокосовые (килинг) острова</option>
+						<option value="CO">Колумбия</option>
+						<option value="KM">Коморские острова</option>
+						<option value="CG">Конго</option>
+						<option value="KP">Корейская народно-демократическая республика</option>
+						<option value="KR">Корея</option>
+						<option value="CR">Коста-рика</option>
+						<option value="CI">Кот-д-ивуар</option>
+						<option value="CU">Куба</option>
+						<option value="KW">Кувейт</option>
+						<option value="KG">Кыргызстан</option>
+						<option value="LA">Лаоская народно-демократическая республика</option>
+						<option value="LV">Латвия</option>
+						<option value="LS">Лесото</option>
+						<option value="LR">Либерия</option>
+						<option value="LB">Ливан</option>
+						<option value="LY">Ливия</option>
+						<option value="LT">Литва</option>
+						<option value="LI">Лихтенштейн</option>
+						<option value="LU">Люксембург</option>
+						<option value="MU">Маврикий</option>
+						<option value="MR">Мавритания</option>
+						<option value="MG">Мадагаскар</option>
+						<option value="YT">Майотта</option>
+						<option value="MO">Макао</option>
+						<option value="MW">Малави</option>
+						<option value="MY">Малайзия</option>
+						<option value="ML">Мали</option>
+						<option value="MV">Мальдивы</option>
+						<option value="MT">Мальта</option>
+						<option value="MA">Марокко</option>
+						<option value="MQ">Мартиника</option>
+						<option value="MH">Маршалловы острова</option>
+						<option value="MX">Мексика</option>
+						<option value="FM">Микронезия (федеративные штаты)</option>
+						<option value="MZ">Мозамбик</option>
+						<option value="MD">Молдова</option>
+						<option value="MC">Монако</option>
+						<option value="MN">Монголия</option>
+						<option value="MS">Монтсеррат</option>
+						<option value="MM">Мьянма</option>
+						<option value="NA">Намибия</option>
+						<option value="NR">Науру</option>
+						<option value="NP">Непал</option>
+						<option value="NE">Нигер</option>
+						<option value="NG">Нигерия</option>
+						<option value="NL">Нидерланды</option>
+						<option value="NI">Никарагуа</option>
+						<option value="NU">Ниуэ</option>
+						<option value="NZ">Новая зеландия</option>
+						<option value="NC">Новая каледония</option>
+						<option value="NO">Норвегия</option>
+						<option value="AE">Объединенные арабские эмираты</option>
+						<option value="OM">Оман</option>
+						<option value="BV">Остров буве</option>
+						<option value="CK">Остров кука</option>
+						<option value="IM">Остров мэн</option>
+						<option value="NF">Остров норфолк</option>
+						<option value="SH">Остров святой елены</option>
+						<option value="KY">Острова кайман</option>
+						<option value="TC">Острова теркс и кайкос</option>
+						<option value="PK">Пакистан</option>
+						<option value="PW">Палау</option>
+						<option value="PA">Панама</option>
+						<option value="VA">Папский престол (г.ватикан)</option>
+						<option value="PG">Папуа-новая гвинея</option>
+						<option value="PY">Парагвай</option>
+						<option value="PE">Перу</option>
+						<option value="PL">Польша</option>
+						<option value="PT">Португалия</option>
+						<option value="PR">Пуэрто-рико</option>
+						<option value="AZ">Республика азербайджан</option>
+						<option value="BY">Республика беларусь</option>
+						<option value="MK">Республика македония</option>
+						<option value="RE">Реюньон</option>
+						<option value="RU">Российская федерация</option>
+						<option value="RW">Руанда</option>
+						<option value="RO">Румыния</option>
+						<option value="WS">Самоа</option>
+						<option value="SM">Сан-марино</option>
+						<option value="ST">Сан-томе и принсипи</option>
+						<option value="SA">Саудовская аравия</option>
+						<option value="SZ">Свазиленд</option>
+						<option value="SC">Сейшельские острова</option>
+						<option value="SN">Сенегал</option>
+						<option value="VC">Сент-винсент и гренадины</option>
+						<option value="KN">Сент-китс и невис</option>
+						<option value="LC">Сент-люсия</option>
+						<option value="RS">Сербия</option>
+						<option value="SG">Сингапур</option>
+						<option value="SY">Сирийская арабская республика</option>
+						<option value="SK">Словакия</option>
+						<option value="SI">Словения</option>
+						<option value="GB">Соединенное королевство</option>
+						<option value="US">Соединенные штаты </option>
+						<option value="SB">Соломоновы острова</option>
+						<option value="SO">Сомали</option>
+						<option value="SD">Судан</option>
+						<option value="SR">Суринам</option>
+						<option value="SL">Сьера-леоне</option>
+						<option value="TJ">Таджикистан</option>
+						<option value="TH">Таиланд</option>
+						<option value="TW">Тайвань</option>
+						<option value="TZ">Танзания, объединенная республика</option>
+						<option value="TG">Того</option>
+						<option value="TK">Токелау</option>
+						<option value="TO">Тонга</option>
+						<option value="TT">Тринидад и тобаго</option>
+						<option value="TV">Тувалу</option>
+						<option value="TN">Тунис</option>
+						<option value="TM">Туркменистан</option>
+						<option value="TR">Турция</option>
+						<option value="UG">Уганда</option>
+						<option value="UZ">Узбекистан</option>
+						<option value="UA">Украина</option>
+						<option value="UY">Уругвай</option>
+						<option value="FO">Фарерские острова</option>
+						<option value="FJ">Фиджи</option>
+						<option value="PH">Филипины</option>
+						<option value="FI">Финляндия</option>
+						<option value="FK">Фолклендские (мальвинские) острова</option>
+						<option value="FR">Франция</option>
+						<option value="GF">Французская гвиана</option>
+						<option value="HR">Хорватия</option>
+						<option value="CF">Центрально-африканская республика</option>
+						<option value="TD">Чад</option>
+						<option value="ME">Черногория</option>
+						<option value="CZ">Чешская республика</option>
+						<option value="CL">Чили</option>
+						<option value="CH">Швейцария</option>
+						<option value="SE">Швеция</option>
+						<option value="LK">Шри ланка</option>
+						<option value="EC">Эквадор</option>
+						<option value="GQ">Экваториальная гвинея</option>
+						<option value="AX">Эландские острова</option>
+						<option value="SV">Эль-сальвадор</option>
+						<option value="ER">Эритрея</option>
+						<option value="EE">Эстония</option>
+						<option value="ET">Эфиопия</option>
+						<option value="ZA">Южная африка</option>
+						<option value="JM">Ямайка</option>
+						<option value="JP">Япония</option>
+						</select></div>
+                    <div class="in_for5"><label for="certified">Страна-контрагент является страной происхождения товара:</label> <input type="checkbox" id="certified" class="certified" name="certified" value="1"></div>
+                    <div class="in_for6"><label for="amount">Таможенная стоимость:</label></div>
+                    <div class="in_for7"><input type="text" id="amount" class="val_field wisi" name="amount" value="0" required=""> сом</div>
+                    <div class="in_for8"><label for="quantity">Количество:</label></div>
+                    <div class="in_for9"><input type="text" id="quantity" class="val_field wisi" name="quantity"> <span id="measure">кг</span></div>
+                    <div class="in_for10"><button type="submit" id="calc_submit" class="submit">Считать</button></div>
+                </form>
+            </div>
+            <div class="calc_item3">
+                <div class="">
+                    <p class="item2_desc"> Код ТН ВЭД: <span id="code_out1"></span></p>
+                </div>
+                <div class="">
+                    <p class="item2_desc"> Товарная позиция: <span id="code_name1"></span></p>
+                </div>
+                <div class="">
+                    <p class="item2_desc"> Пошлина: <span id="code_rate1"></span></p>
+                </div>
+                <div class="">
+                    <p class="item2_desc"> Акциз: <span></span></p>
+                </div>
+                <div class="">
+                    <p class="item2_desc">НДС: <span></span></p>
+                </div>
+                <div class="">
+                    <p class="item2_desc"> Преференциальный товар: <span></span></p>
+                </div>
+            </div>
+
+            <div class="calc_item4">
+                <div class="item4_left hed">Расходы по таможенной очистке</div>
+                <div class="item4_center hed">Виды платежей</div>
+                <div class="item4_right hed">В валюте таможенных платежей (сом)</div>
+                <div class="item4_left">Таможенная стоимость товара</div>
+                <div class="item4_center">-</div>
+                <div class="item4_right">1000</div>
+                <div class="item4_left">Таможенная пошлина</div>
+                <div class="item4_center">0</div>
+                <div class="item4_right">0</div>
+                <div class="item4_left">Акциз</div>
+                <div class="item4_center">нет</div>
+                <div class="item4_right">0</div>
+                <div class="item4_left">НДС</div>
+                <div class="item4_center">12%</div>
+                <div class="item4_right">120</div>
+                <div class="item4_left">Таможенный сбор</div>
+                <div class="item4_center">0.25%</div>
+                <div class="item4_right">200</div>
+                <div class="item4_left">Итого - расходы по таможенной очистке</div>
+                <div class="item4_center">-</div>
+                <div class="item4_right"><strong>320</strong></div>
+                <div class="item4_left">Итого - расходы по таможенной очистке вместе со стоимостью товара</div>
+                <div class="item4_center">-</div>
+                <div class="item4_right"><strong>1320</strong></div>
+            </div>
+
+            <div class="calc_item5">
+                <ul>
+                    <li>Расчет таможенной стоимости товара осуществляется по Методу 1 на основе информации, введенной пользователем.
+                    </li>
+                    <li>Расчет таможенной пошлины - осуществляет расчеты суммы таможенной пошлины, подлежащей к оплате, в соответствии со ставками ЕТТ для каждого кода ТН ВЭД.</li>
+                    <li>Расчет акцизного налога - осуществляет проверку подакцизности указанного товара и расчет суммы акцизного налога, подлежащего к оплате.</li>
+                    <li>Расчет НДС - осуществляет расчет суммы НДС, подлежащей к оплате при импорте товара.</li>
+                    <li>Расчет расходов по таможенной очистке - определяет общую сумму расходов по таможенной очистке.
+                    </li>
+                    <li>Сумма таможенного сбора должна вычисляться по ставке таможенного сбора, но при этом быть не менее минимальной, и не более максимальной суммы сбора</li>
+                </ul>
+            </div>
+
+            <div class="calc_item6">
+                <div class="item6_left hed">Страна-контрагент</div>
+                <div class="item6_center hed">Коэффициент импортной пошлины<sup>1</sup></div>
+                <div class="item6_right hed">Категория страны<sup>2</sup></div>
+                <div class="item6_left">Австралия</div>
+                <div class="item6_center">1</div>
+                <div class="item6_right"></div>
+                <div class="item6_full">
+                    <p> 1 - При отсутствии сертификата происхождения коэффициент равен 1</p>
+                    <p> 2 - При ввозе товара из стран ЕАЭС таможенные платежи не взимаются</p>
+                </div>
+            </div>
+
+            <div class="calc_item7">
+                <p>Кыргызская Республика в соответствии с международными договорами, государств-членов Евразийского экономического союза, вступившими в установленном порядке в силу международными договорами участницей которых является Кыргызская Республика,
+                    предоставляет тарифные преференции в виде освобождения от уплаты таможенной пошлины и снижения ставок ввозных таможенных пошлин.</p>
+                <details>
+                    <summary>Подробнее..</summary>
+                    <p>СВ целях применения <strong>тарифных преференций</strong>, при ввозе небольших партий товаров (таможенной стоимостью до 5000 долларов США) возможна подача декларации о происхождении товара, которая представляет собой заявление о стране
+                        происхождения товара, сделанное изготовителем, продавцом или лицом, перемещающим товары, на коммерческом счете либо ином документе, имеющем отношение к товару.
+                    </p>
+                </details>
+            </div>
+
+            <div class="calc_item8">
+                <h3 class="header_title">V. Справочная информация <br> Нормативно-правовые акты</h3>
+            </div>
+            <div class="calc_item9">
+                <p>Постановление Правительства КР от 30 декабря 2008г № 735 <a href="#">Скачать</a></p>
+
+                <p>Межгосударственный классификатор стран мира (МК (ИСО 3166) 004 - 97) <a href="#">Скачать</a></p>
+
+                <p>Статья 177 Закона Кыргызской Республики “О таможенном регулировании в Кыргызской Республике” <a href="#">Скачать</a></p>
+
+                <p>Решение Межгосударственного Совета Евразийского экономического сообщества от 27 ноября 2009 г. №18
+                    <a href="#">Скачать</a></p>
+
+                <p> Соглашения "Об определении таможенной стоимости товаров, перемещаемых через таможенную границу Таможенного союза" от 25.01.2008г. <a href="#">Скачать</p></a> Сайт Евразийской Экономической Комиссии - <a href="http://www.eurasiancommission.org">http://www.eurasiancommission.org</a>
+
+            </div>
+            <div class="calc_itemtr"></div>
+
+        </section>
+    </div>
+    <footer class="footersss">
+        <div>
+            <p>ГП «Центр «единого окна»<br> в сфере внешней торговли</p>
+        </div>
+        <div>
+            <p>г. Бишкек пр. Чуй, 122</p>
+        </div>
+        <div>
+            <a href="tel:+996312902640">+996 312 90 26 40</a>
+        </div>
+        <div>
+            <p><a href="mailto:info@trade.kg">info@trade.kg</a></p>
+        </div>
+    </footer>
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script>
+        $('.super_id').on('click', function(e) {
+
+            e.preventDefault();
+            $('#code_out').text($(this).attr('data-code'));
+            $('#code_out1').text($(this).attr('data-code'));
+            $('#code_out3').val($(this).attr('data-code'));
+            $('#code_name').text($(this).attr('data-name'));
+            $('#code_name1').text($(this).attr('data-name'));
+            $('#code_rate').text($(this).attr('data-rate'));
+            $('#code_rate1').text($(this).attr('data-rate'));
+            $('#it2').text($(this).attr('clck'));
+        });
+
+        function setAmount(val) {
+            $("#amount").val(val);
+        }
+
+
+        $('.onsubmit').on('click', function(e) {
+            var USD = $('#usd').text();
+            var EUR = $('#eur').text();
+            var RUB = $('#rub').text();
+            var KZT = $('#tenge').text();
+
+            var currency_rates = [{
+                iso: 'EUR',
+                rate: EUR,
+            }, {
+                iso: 'KZT',
+                rate: KZT,
+            }, {
+                iso: 'RUB',
+                rate: RUB,
+            }, {
+                iso: 'USD',
+                rate: USD,
+            }, ];
+
+            var invoice = document.getElementById('invoice').value;
+            var shipping = document.getElementById('shipping').value;
+            var el = document.getElementById('iso_invoice');
+            var iso_invoice = el.options[el.selectedIndex].value;
+            el = document.getElementById('iso_shipping');
+            var iso_shipping = el.options[el.selectedIndex].value;
+            document.getElementById('cust_val_info').style.visibility = 'hidden';
+            var desc = 'Кликните на стоимость, чтобы скопировать в поле калькулятора.';
+
+
+            function getCurrencyRate(iso_invoice, iso_shipping) {
+                for (var k in currency_rates) {
+                    if (currency_rates[k].iso == iso_invoice) {
+                        var one = currency_rates[k].rate.substr(0, 7)
+                        console.log(one)
+                        return one
+                    }
+                    if (currency_rates[k].iso == iso_shipping) {
+                        var two = currency_rates[k].rate.substr(0, 7)
+                        console.log(two)
+                        return two
+                    }
+                }
+                return 1;
+            }
+
+            var sum = (parseFloat(invoice) * parseFloat(getCurrencyRate(iso_invoice)) + parseFloat(shipping) * parseFloat(getCurrencyRate(iso_shipping))).toFixed(5);
+            console.log(sum)
+            if (isNaN(sum) || parseFloat(invoice) == 0 || parseFloat(shipping) == 0 || sum == 0) desc = 'Поля инвойс и доставка должны быть больше 0';
+            else {
+                //document.getElementById('shipping').value = parseFloat(shipping);			
+                document.getElementById('cust_val').innerHTML = '<a id="inputId1" class="clck"  href="javascript:setAmount(' + sum + ')">' + sum + '</a>';
+                document.getElementById('cust_val_info').style.visibility = 'visible';
+
+            }
+            document.getElementsByClassName('desc').innerText = desc;
+            return false;
+        })
+    </script>
+</body>
+
+</html>
